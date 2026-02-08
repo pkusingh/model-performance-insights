@@ -1,5 +1,13 @@
 import type { ModelBlock } from "@/data/modelMetrics";
 import { MetricCell } from "./MetricCell";
+import { ModelHeader } from "./ModelHeader";
+import { RETURN_HORIZONS } from "@/lib/parseModelName";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ModelTableProps {
   block: ModelBlock;
@@ -8,12 +16,7 @@ interface ModelTableProps {
 export function ModelTable({ block }: ModelTableProps) {
   return (
     <div className="rounded-md border border-border bg-card overflow-hidden">
-      <div className="px-4 py-2.5 border-b border-border flex items-baseline gap-3">
-        <h3 className="text-sm font-semibold text-foreground font-sans truncate">
-          {block.name}
-        </h3>
-        <span className="text-xs text-muted-foreground shrink-0">n={block.n}</span>
-      </div>
+      <ModelHeader name={block.name} n={block.n} />
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -21,11 +24,26 @@ export function ModelTable({ block }: ModelTableProps) {
               <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground sticky left-0 bg-card z-10 min-w-[100px]">
                 metric
               </th>
-              {block.columns.map((col) => (
-                <th key={col} className="px-3 py-2 text-right text-xs font-medium text-muted-foreground whitespace-nowrap">
-                  {col}
-                </th>
-              ))}
+              <TooltipProvider delayDuration={100}>
+                {block.columns.map((col) => {
+                  const info = RETURN_HORIZONS[col];
+                  return (
+                    <th key={col} className="px-3 py-2 text-right text-xs font-medium text-muted-foreground whitespace-nowrap">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help border-b border-dotted border-muted-foreground/30">
+                            {info?.label || col}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs font-normal">
+                          <code className="text-accent">{col}</code>
+                          {info && <span className="ml-1 text-muted-foreground">— {info.description}</span>}
+                        </TooltipContent>
+                      </Tooltip>
+                    </th>
+                  );
+                })}
+              </TooltipProvider>
             </tr>
           </thead>
           <tbody>
